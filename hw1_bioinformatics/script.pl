@@ -28,39 +28,69 @@ while($line = <F>) {
 }
 close(F);
 
-#print "$s{$aa[0]}{$aa[0]}\n";
-#print "$s{A}{V}\n";  # you can access the score for a given amino acid pair
+#STEP 1
+sub rand_seq {
+    my $len = shift;
+    my $seq = "";
 
-$str="";  # str concatenate 20 substr, one for each amino acid i with len= PAM1[i][i] 
-for($i=0;$i<=$#aa;$i++){
-    $k=$s{$aa[$i]}{$aa[$i]}; # k = number of repeation of amino acid i
-    for($j=0;$j<$k; $j++){
-        $str .= $aa[$i];
-    }
-}
-
-$i=0;
-while($i<500) {
-    $r = int(rand()*$tot);  #tot = total len of str
-    $seq .= substr($str, $r, 1);	# concatenate aa in $str at positin $r to $seq
-    $i++;
-}
-
-sub mutate_seq {
-    my $seq = shift;
-    my $mstr="";  # str concatenate 20 substr, one for each amino acid i with len= PAM1[i][i] 
+    $str="";  # str concatenate 20 substr, one for each amino acid i with len= PAM1[i][i] 
     for($i=0;$i<=$#aa;$i++){
         $k=$s{$aa[$i]}{$aa[$i]}; # k = number of repeation of amino acid i
         for($j=0;$j<$k; $j++){
             $str .= $aa[$i];
         }
     }
+
+    $i=0;
+    while($i<$len) {
+        $r = int(rand()*$tot);  #tot = total len of str
+        $seq .= substr($str, $r, 1);	# concatenate aa in $str at positin $r to $seq
+        $i++;
+    }
+    
+    return $seq;
 }
 
-print "$seq\n";  # this is a random sequence of 500 aa
-mutate_seq($seq);
+my $seq_a = rand_seq(500);
+print "----------------------------------------------------------------------------------------------------\n";
+print "STEP 1 OUTPUT:\n";
+print "----------------------------------------------------------------------------------------------------\n";
+print "$seq_a\n";
 
-print("________________________________________\n");
-for ($i = 0; $i <= $#aa; $i++) {
-    print "$aa[$i]";
+# STEP 2
+sub mutate_seq {
+    my $seq = shift;
+    my $mstr = "";  # str concatenate 20 substr, one for each amino acid i with len= PAM1[i][i] 
+    # PAM   A   R   N
+    # D     6   0   42
+    # Then aa_mut{D} = "AAAAANNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+    my %aa_mut;
+
+    # Loop through amino acids to fill out %aa_mut
+    for ($i = 0; $i <= $#aa; $i++){
+        # For each amino acid, look through every other amino acid.
+        for ($j=0; $j<=$#aa; $j++) {
+            # Look up mutation rate of amino acid in PAM (in this case its s=PAM)
+            $k = $s{$aa[$i]}{$aa[$j]}; # k = number of repeation of amino acid i
+            for($l = 0; $l < $k; $l++){
+                $mstr .= $aa[$j];
+            }
+        }
+        @aa_mut{$aa[$i]} = $mstr;
+        $mstr = "";
+    }
+
+    foreach $c (split //, $seq) {
+        my $choices = $aa_mut{$c};
+        $r = int(rand() * length $choices);  
+        $seq_mut .= substr($choices, $r, 1);
+    }
+
+    return $seq_mut;
 }
+
+$seq_a_mutated = mutate_seq($seq_a);
+print "----------------------------------------------------------------------------------------------------\n";
+print "STEP 2 OUTPUT:\n";
+print "----------------------------------------------------------------------------------------------------\n";
+print "$seq_a_mutated\n";
