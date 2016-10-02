@@ -52,7 +52,7 @@ sub rand_seq {
 }
 
 my $seq_a = rand_seq(500);
-print "----------------------------------------------------------------------------------------------------\n";
+print "\n----------------------------------------------------------------------------------------------------\n";
 print "STEP 1 OUTPUT:\n";
 print "----------------------------------------------------------------------------------------------------\n";
 print "$seq_a\n";
@@ -65,6 +65,7 @@ sub mutate_seq {
     # D     6   0   42
     # Then aa_mut{D} = "AAAAANNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
     my %aa_mut;
+    my $seq_mut = "";
 
     # Loop through amino acids to fill out %aa_mut
     for ($i = 0; $i <= $#aa; $i++){
@@ -90,7 +91,31 @@ sub mutate_seq {
 }
 
 $seq_a_mutated = mutate_seq($seq_a);
-print "----------------------------------------------------------------------------------------------------\n";
+print "\n----------------------------------------------------------------------------------------------------\n";
 print "STEP 2 OUTPUT:\n";
 print "----------------------------------------------------------------------------------------------------\n";
 print "$seq_a_mutated\n";
+
+# STEP 3
+sub mutate_seq_iterative {
+    my $iterations = 50;
+    my $ancestor = rand_seq(500);
+    
+    my $mutant1 = mutate_seq($ancestor);
+    my $mutant2 = mutate_seq($ancestor);
+
+
+    for (my $i = 0; $i < $iterations; $i++) {
+        $mutant1 = mutate_seq($mutant1);
+        $mutant2 = mutate_seq($mutant2);
+    }
+
+    print "\n----------------------------------------------------------------------------------------------------\n";
+    print "STEP 3 OUTPUT:\n";
+    print "-MUTANT 1-------------------------------------------------------------------------------------------\n";
+    print "$mutant1\n";
+    print "-MUTANT 2-------------------------------------------------------------------------------------------\n";
+    print "$mutant2\n";
+}
+
+mutate_seq_iterative();
