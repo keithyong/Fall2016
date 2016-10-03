@@ -164,7 +164,12 @@ sub step_3 {
     for (my $i = 0; $i <= $#aa; $i++) {
         printf "%5s\t", $aa[$i];
         for (my $j = 0; $j <= $#aa; $j++) {
-            printf "%5.2f\t", $s2{$aa[$i]}{$aa[$j]};
+            my $curr = $s2{$aa[$i]}{$aa[$j]};
+            if ($curr == 0) {
+                printf "%5d\t", 0;
+            } else {
+                printf "%5.2f\t", $curr;
+            }
         }
         print "\n";
     }
