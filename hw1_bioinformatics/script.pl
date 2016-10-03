@@ -92,9 +92,14 @@ $seq_a_mutated = mutate_seq($seq_a);
 
 # Given an array and a char, return the probabil-
 # ity of finding that char in the entire string.
-sub str_occ {
+# With pseudo-count,
+# f(i) = [c(i) + pc]/ [1000 + 20 x pc]
+# where pc is pseudo-count, which is typically set at a very small value,
+# such that f(i) won't be zero when the actual c(i) is zero.
+sub f {
     my @a = @{$_[0]};
     my $m = $_[1];
+    my $pc = 0.1;
 
     $c = 0;
 
@@ -104,7 +109,7 @@ sub str_occ {
         }
     }
     
-    return $c / ($#a + 1);
+    return ($c + $pc) / ($#a + 1 + (20 * $pc));
 }
 
 # STEP 3
@@ -122,7 +127,7 @@ sub step_3 {
     # Generate f(AA) lookup array into $f
     my @both_mutants = split //, $mutant1 . $mutant2;
     for (my $i = 0; $i <= $#aa; $i++) {
-        $f{$aa[$i]} = str_occ(\@both_mutants, $aa[$i]);
+        $f{$aa[$i]} = f(\@both_mutants, $aa[$i]);
     }
 
     # Generate f(i, j) lookup matrix into $ff
@@ -132,13 +137,14 @@ sub step_3 {
 
     for (my $i = 0; $i <= $#aa; $i++) {
         for (my $j = 0; $j <= $#aa; $j++) {
-            $ff{$aa[$i]}{$aa[$j]} = str_occ(\@aligned_mutants, $aa[$i] . $aa[$j])
+            $ff{$aa[$i]}{$aa[$j]} = f(\@aligned_mutants, $aa[$i] . $aa[$j])
         }
     }
 
     # Generate our scoring matrix s2
     # S(i,j) = log [ f(i,j) / (f(i) f(j)) ]
     my $s2;
+    my $pc = 0.1;
     for (my $i = 0; $i <= $#aa; $i++) {
         $fi = $f{$aa[$i]};
         for (my $j = 0; $j <= $#aa; $j++) {

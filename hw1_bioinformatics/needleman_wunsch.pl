@@ -10,23 +10,30 @@ $transition_score = -2;     # AG or CT match
 $transversion_score = -3;   # All others
 $gap_score = -8;
 
-for ($i = 0; $i < $s1_len; $i++) {
+print "$s1_len $s2_len\n";
+for (my $i = 0; $i < $s1_len; $i++) {
     $M[$i][0] = $gap_score * $i;
 }
-for ($j = 0; $j < $s2_len; $j++) {
+for (my $j = 0; $j < $s2_len; $j++) {
     $M[0][$j] = $gap_score * $j;
 }
 
-for ($i = 1; $i < $s1_len; $i++) {
-    for ($j = 1; $j < $s2_len; $j++) {
+for (my $i = 1; $i < $s1_len; $i++) {
+    for (my $j = 1; $j < $s2_len; $j++) {
         $M[$i][$j] = 0;
     }
 }
 
+# PRINT OUT THE TABLE
+for (my $j = 1; $j < $s2_len; $j++) {
+    print "$test_seq2[$j]\t";
+}
+print "\n";
+
 for ($i = 0; $i < $s1_len; $i++) {
+    print "$test_seq1[$i]\t";
     for ($j = 0; $j < $s2_len; $j++) {
-        print "$M[$i][$j]\t";
+        printf "%2d\t", $M[$i][$j];
     }
     print "\n";
 }
-
