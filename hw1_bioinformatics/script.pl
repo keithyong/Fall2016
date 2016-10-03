@@ -158,13 +158,13 @@ sub step_3 {
     # Print out s2 in nice format
     print "\t";
     for (my $i = 0; $i <= $#aa; $i++) {
-        print "$aa[$i]\t";
+        printf "%5s\t", $aa[$i];
     }
     print"\n";
     for (my $i = 0; $i <= $#aa; $i++) {
-        print "$aa[$i]\t";
+        printf "%5s\t", $aa[$i];
         for (my $j = 0; $j <= $#aa; $j++) {
-            printf "%.2f\t", $s2{$aa[$i]}{$aa[$j]};
+            printf "%5.2f\t", $s2{$aa[$i]}{$aa[$j]};
         }
         print "\n";
     }
