@@ -154,6 +154,20 @@ sub step_3 {
             $s2{$aa[$i]}{$aa[$j]} = $score;
         }
     }
+
+    # Print out s2 in nice format
+    print "\t";
+    for (my $i = 0; $i <= $#aa; $i++) {
+        print "$aa[$i]\t";
+    }
+    print"\n";
+    for (my $i = 0; $i <= $#aa; $i++) {
+        print "$aa[$i]\t";
+        for (my $j = 0; $j <= $#aa; $j++) {
+            printf "%.2f\t", $s2{$aa[$i]}{$aa[$j]};
+        }
+        print "\n";
+    }
 }
 step_3();
 
