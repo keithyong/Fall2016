@@ -52,10 +52,7 @@ sub rand_seq {
 }
 
 my $seq_a = rand_seq(500);
-print "\n----------------------------------------------------------------------------------------------------\n";
-print "STEP 1 OUTPUT:\n";
-print "----------------------------------------------------------------------------------------------------\n";
-print "$seq_a\n";
+#print "$seq_a\n";
 
 # STEP 2
 sub mutate_seq {
@@ -70,7 +67,7 @@ sub mutate_seq {
     # Loop through amino acids to fill out %aa_mut
     for ($i = 0; $i <= $#aa; $i++){
         # For each amino acid, look through every other amino acid.
-        for ($j=0; $j<=$#aa; $j++) {
+        for ($j = 0; $j <= $#aa; $j++) {
             # Look up mutation rate of amino acid in PAM (in this case its s=PAM)
             $k = $s{$aa[$i]}{$aa[$j]}; # k = number of repeation of amino acid i
             for($l = 0; $l < $k; $l++){
@@ -91,31 +88,72 @@ sub mutate_seq {
 }
 
 $seq_a_mutated = mutate_seq($seq_a);
-print "\n----------------------------------------------------------------------------------------------------\n";
-print "STEP 2 OUTPUT:\n";
-print "----------------------------------------------------------------------------------------------------\n";
-print "$seq_a_mutated\n";
+#print "$seq_a_mutated\n";
+
+# Given an array and a char, return the probabil-
+# ity of finding that char in the entire string.
+sub str_occ {
+    my @a = @{$_[0]};
+    my $m = $_[1];
+
+    $c = 0;
+
+    foreach $s (@a) {
+        if ($s eq $m) {
+            $c++;
+        }
+    }
+    
+    return $c / ($#a + 1);
+}
 
 # STEP 3
-sub mutate_seq_iterative {
-    my $iterations = 50;
+sub step_3 {
     my $ancestor = rand_seq(500);
     
     my $mutant1 = mutate_seq($ancestor);
     my $mutant2 = mutate_seq($ancestor);
 
-
-    for (my $i = 0; $i < $iterations; $i++) {
+    for (my $i = 0; $i < 50; $i++) {
         $mutant1 = mutate_seq($mutant1);
         $mutant2 = mutate_seq($mutant2);
     }
 
-    print "\n----------------------------------------------------------------------------------------------------\n";
-    print "STEP 3 OUTPUT:\n";
-    print "-MUTANT 1-------------------------------------------------------------------------------------------\n";
-    print "$mutant1\n";
-    print "-MUTANT 2-------------------------------------------------------------------------------------------\n";
-    print "$mutant2\n";
-}
+    # Generate f(AA) lookup array into $f
+    my @both_mutants = split //, $mutant1 . $mutant2;
+    for (my $i = 0; $i <= $#aa; $i++) {
+        $f{$aa[$i]} = str_occ(\@both_mutants, $aa[$i]);
+    }
 
-mutate_seq_iterative();
+    # Generate f(i, j) lookup matrix into $ff
+    for (my $i = 0; $i < length $mutant1; $i++) {
+        push @aligned_mutants, substr($mutant1, $i, 1) . substr($mutant2, $i, 1);
+    }
+
+    for (my $i = 0; $i <= $#aa; $i++) {
+        for (my $j = 0; $j <= $#aa; $j++) {
+            $ff{$aa[$i]}{$aa[$j]} = str_occ(\@aligned_mutants, $aa[$i] . $aa[$j])
+        }
+    }
+
+    # Generate our scoring matrix s2
+    # S(i,j) = log [ f(i,j) / (f(i) f(j)) ]
+    my $s2;
+    for (my $i = 0; $i <= $#aa; $i++) {
+        $fi = $f{$aa[$i]};
+        for (my $j = 0; $j <= $#aa; $j++) {
+            $fj = $f{$aa[$j]};
+            $fij = $ff{$aa[$i]}{$aa[$j]};
+            
+            if ($fij == 0) {
+                $score = 0;
+            } else {
+                $score = log($fij / ($fi * $fj));
+            }
+
+            $s2{$aa[$i]}{$aa[$j]} = $score;
+        }
+    }
+}
+step_3();
+
