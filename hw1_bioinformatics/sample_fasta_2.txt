@@ -1,0 +1,4 @@
+>seq1
+CACGTACG
+>seq2
+TAGGACATG
