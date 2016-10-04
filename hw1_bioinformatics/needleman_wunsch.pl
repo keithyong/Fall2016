@@ -1,6 +1,7 @@
 use Data::Dumper;
 use List::Util qw( max );
 
+# Note: I used the pseudocode from wikipedia to do this assignment
 #@s1 = split //, "AGGCCTGAAAGTCCGTCGTCGGAACGCGATCTTGCGACATCCCGAATATCCGTTCATGATTGCCAATATC";
 #@s2 = split //, "GAGAAGTGGAGGCGCTCATCGCAGAATTAGAGGCAGTGAACGCGGAGATCAAGCAGAAGAGCGAGAGAAAGGCGGAGATTGAG";
 @s2 = split //, "CACGTACG";
@@ -62,8 +63,8 @@ for (my $j = 0; $j <= $s2_len; $j++) {
 
 for (my $i = 1; $i <= $s1_len; $i++) {
     for (my $j = 1; $j <= $s2_len; $j++) {
-        $ai = $s1[$i - 1];
-        $bj = $s2[$j - 1];
+        my $ai = $s1[$i - 1];
+        my $bj = $s2[$j - 1];
         $match = $M[$i - 1][$j - 1] + S($ai, $bj);
         $delete = $M[$i - 1][$j] + $gap_score;
         $insert = $M[$i][$j - 1] + $gap_score;
@@ -72,3 +73,35 @@ for (my $i = 1; $i <= $s1_len; $i++) {
 }
 
 print_matrix();
+
+# Generate alignment.
+sub generate_alignment() {
+    my $i = $s1_len;
+    my $j = $s2_len;
+    my $A = "";
+    my $B = "";
+
+    while ($i > 0 and $j > 0) {
+        my $ai = $s1[$i - 1];
+        my $bj = $s2[$j - 1];
+        if ($i > 0 and $j > 0 and $M[$i][$j] eq ($M[$i - 1][$j - 1] + S($ai, $bj))) {
+            $A = $ai . $A;
+            $B = $bj . $B;
+            $i--;
+            $j--;
+        } elsif ($i > 0 and $M[$i][$j] eq $M[$i - 1][$j] + $gap_score) {
+            $A = $ai . $A;
+            $B = "-" . $B;
+            $i--;
+        } else {
+            $A = "-" . $A;
+            $B = $bj . $B;
+            $j--;
+        }
+    }
+
+    print "$A\n";
+    print "$B\n";
+}
+
+generate_alignment();
