@@ -3,15 +3,11 @@
 # Needleman-Wunsch command line 
 # October 3, 2016
 # Author: Keith Yong    keithy@udel.edu
-# yongk_align [–o 1] <input_file>
+# USAGE:
+# ./yongk_align [–o 1] sample_fasta.txt
 
 use List::Util qw( max );
 use Data::Dumper;
-
-@s2 = split //, "CACGTACG";
-@s1 = split //, "TAGGACATG";
-$s1_len = $#s1 + 1;
-$s2_len = $#s2 + 1;
 
 $id_score = 4;              # AA/CC/GG/TT match
 $transition_score = -2;     # AG or CT match
@@ -27,10 +23,7 @@ if (scalar @ARGV eq 3 and $ARGV[0] eq "-o" and $ARGV[1] eq "1") {
     $filename = $ARGV[0];
 }
 
-print "$filename\n";
-
 sub read_fasta_file {
-    # Initialize variables
     my @filedata = (  );
 
     unless( open(GET_FILE_DATA, $filename) ) {
@@ -42,23 +35,23 @@ sub read_fasta_file {
     close GET_FILE_DATA;
 
     my $sequence = '';
-    my @seqs;
-    foreach my $line (@filedata) {
-        if ($line =~ /^\s*$/) {
+    @seqs;
+    foreach my $line (@filedata) { if ($line =~ /^\s*$/) {
             next;
         } elsif($line =~ /^\s*#/) {
             next;
         } elsif($line =~ /^>/) {
             next;
         } else {
+            $line =~ s/\s//g;
             push @seqs, $line;
         }
     }
 
-    $sequence =~ s/\s//g;
-    print "$sequence\n";
-
-    return $sequence;
+    @s2 = split //, $seqs[0];
+    @s1 = split //, $seqs[1];
+    $s1_len = $#s1 + 1;
+    $s2_len = $#s2 + 1;
 }
 
 sub print_dp_matrix {
@@ -100,7 +93,7 @@ sub S {
     }
 }
 
-sub generate_dp_matrix() {
+sub generate_dp_matrix {
     for (my $i = 0; $i <= $s1_len; $i++) {
         $M[$i][0] = $gap_score * $i;
     }
@@ -125,7 +118,7 @@ sub generate_dp_matrix() {
 }
 
 # Generate alignment.
-sub generate_alignment() {
+sub generate_alignment {
     my $i = $s1_len;
     my $j = $s2_len;
     my $A = "";
@@ -150,11 +143,15 @@ sub generate_alignment() {
         }
     }
 
+    print "\nOPTIMAL ALIGNMENT FOUND:\n";
     print "$A\n";
     print "$B\n";
 }
 
-read_fasta_file($filename);
-generate_dp_matrix();
-generate_alignment();
+sub main {
+    read_fasta_file();
+    generate_dp_matrix();
+    generate_alignment();
+}
 
+main();
