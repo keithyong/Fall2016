@@ -1,21 +1,59 @@
-use Data::Dumper;
-use List::Util qw( max );
+#!/usr/bin/perl
 
-# Note: I used the pseudocode from wikipedia to do this assignment
-#@s1 = split //, "AGGCCTGAAAGTCCGTCGTCGGAACGCGATCTTGCGACATCCCGAATATCCGTTCATGATTGCCAATATC";
-#@s2 = split //, "GAGAAGTGGAGGCGCTCATCGCAGAATTAGAGGCAGTGAACGCGGAGATCAAGCAGAAGAGCGAGAGAAAGGCGGAGATTGAG";
-@s2 = split //, "CACGTACG";
-@s1 = split //, "TAGGACATG";
-$s1_len = $#s1 + 1;
-$s2_len = $#s2 + 1;
+# Needleman-Wunsch command line 
+# October 3, 2016
+# Author: Keith Yong    keithy@udel.edu
+# yongk_align [–o 1] <input_file>
+
+use List::Util qw( max );
+use Data::Dumper;
 
 $id_score = 4;              # AA/CC/GG/TT match
 $transition_score = -2;     # AG or CT match
 $transversion_score = -3;   # All others
 $gap_score = -8;
 
+# Command line
+$PRINT_DP_MATRIX = 0;
+if (scalar @ARGV eq 3 and $ARGV[0] eq "-o" and $ARGV[1] eq "1") {
+    $PRINT_DP_MATRIX = 1;
+    $filename = $ARGV[2];
+} else { 
+    $filename = $ARGV[0];
+}
 
-sub print_matrix {
+sub read_fasta_file {
+    my @filedata = (  );
+
+    unless( open(GET_FILE_DATA, $filename) ) {
+        print STDERR "Cannot open file \"$filename\"\n\n";
+        exit;
+    }
+
+    @filedata = <GET_FILE_DATA>;
+    close GET_FILE_DATA;
+
+    my $sequence = '';
+    @seqs;
+    foreach my $line (@filedata) { if ($line =~ /^\s*$/) {
+            next;
+        } elsif($line =~ /^\s*#/) {
+            next;
+        } elsif($line =~ /^>/) {
+            next;
+        } else {
+            $line =~ s/\s//g;
+            push @seqs, $line;
+        }
+    }
+
+    @s2 = split //, $seqs[0];
+    @s1 = split //, $seqs[1];
+    $s1_len = $#s1 + 1;
+    $s2_len = $#s2 + 1;
+}
+
+sub print_dp_matrix {
     printf "\t%5s\t", "-";
     for ($j = 0; $j < $s2_len; $j++) {
         printf "%5s\t", $s2[$j];
@@ -54,28 +92,32 @@ sub S {
     }
 }
 
-for (my $i = 0; $i <= $s1_len; $i++) {
-    $M[$i][0] = $gap_score * $i;
-}
-for (my $j = 0; $j <= $s2_len; $j++) {
-    $M[0][$j] = $gap_score * $j;
-}
+sub generate_dp_matrix {
+    for (my $i = 0; $i <= $s1_len; $i++) {
+        $M[$i][0] = $gap_score * $i;
+    }
+    for (my $j = 0; $j <= $s2_len; $j++) {
+        $M[0][$j] = $gap_score * $j;
+    }
 
-for (my $i = 1; $i <= $s1_len; $i++) {
-    for (my $j = 1; $j <= $s2_len; $j++) {
-        my $ai = $s1[$i - 1];
-        my $bj = $s2[$j - 1];
-        $match = $M[$i - 1][$j - 1] + S($ai, $bj);
-        $delete = $M[$i - 1][$j] + $gap_score;
-        $insert = $M[$i][$j - 1] + $gap_score;
-        $M[$i][$j] = max ($match, $delete, $insert);
+    for (my $i = 1; $i <= $s1_len; $i++) {
+        for (my $j = 1; $j <= $s2_len; $j++) {
+            my $ai = $s1[$i - 1];
+            my $bj = $s2[$j - 1];
+            $match = $M[$i - 1][$j - 1] + S($ai, $bj);
+            $delete = $M[$i - 1][$j] + $gap_score;
+            $insert = $M[$i][$j - 1] + $gap_score;
+            $M[$i][$j] = max ($match, $delete, $insert);
+        }
+    }
+
+    if ($PRINT_DP_MATRIX eq 1) {
+        print_dp_matrix();
     }
 }
 
-print_matrix();
-
 # Generate alignment.
-sub generate_alignment() {
+sub generate_alignment {
     my $i = $s1_len;
     my $j = $s2_len;
     my $A = "";
@@ -100,8 +142,15 @@ sub generate_alignment() {
         }
     }
 
+    print "\nOPTIMAL ALIGNMENT FOUND:\n";
     print "$A\n";
     print "$B\n";
 }
 
-generate_alignment();
+sub main {
+    read_fasta_file();
+    generate_dp_matrix();
+    generate_alignment();
+}
+
+main();
