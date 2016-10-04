@@ -61,7 +61,7 @@ sub mutate_seq {
     # PAM   A   R   N
     # D     6   0   42
     # Then aa_mut{D} = "AAAAANNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
-    my %aa_mut;
+    my $aa_mut;
     my $seq_mut = "";
 
     # Loop through amino acids to fill out %aa_mut
