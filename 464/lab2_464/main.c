@@ -37,9 +37,25 @@ int eq(uint8_t* d1, uint8_t* d2, int len) {
     return ret;
 }
 
+void rand_str(char *s, const int len) {
+    static const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    int seed = time(NULL);
+    srand(seed);
+
+    for (int i = 0; i < len; ++i) {
+        s[i] = charset[rand() % (sizeof(charset) - 1)];
+    }
+
+    s[len] = 0;
+}
+
 int main(int argc, char *argv[])
 {
-    uint8_t* h1 = h("hello world");
+    char my_str[5];
+    rand_str(my_str, 5);
+    printf("%s\n", my_str);
+    uint8_t* h1 = h(my_str);
     for (int i = 0; i < 3; i++) {
         printf("%02X", h1[i]);
     }
@@ -50,9 +66,13 @@ int main(int argc, char *argv[])
         char buf[200];
         sprintf(buf, "%d", trials);
         h2 = h(buf);
-        printf("%d %s\n", trials, buf);
+        printf("%d %s->%02X%02X%02x %02X%02X%02x\n", trials, my_str, h1[0], h1[1], h1[2], h2[0], h2[1], h2[2]);
         trials++;
     }
+
     return 0;
 }
+
+
+
 
